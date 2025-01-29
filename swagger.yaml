@@ -1,0 +1,162 @@
+openapi: 3.0.0
+info:
+  title: Translation API
+  version: 1.0.0
+
+paths:
+  /translations:
+    post:
+      summary: Create a translation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  description: Language locale (e.g., en, fr)
+                key:
+                  type: string
+                  description: Unique key for the translation
+                content:
+                  type: string
+                  description: Translation content
+                tags:
+                  type: array
+                  items:
+                    type: string
+                    description: Tags associated with the translation
+      responses:
+        '201':
+          description: Translation created successfully
+        '400':
+          description: Invalid input data
+
+  /translations/{id}:
+    get:
+      summary: Retrieve a translation by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the translation
+      responses:
+        '200':
+          description: Translation retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  locale:
+                    type: string
+                  key:
+                    type: string
+                  content:
+                    type: string
+                  tags:
+                    type: array
+                    items:
+                      type: string
+        '404':
+          description: Translation not found
+
+    put:
+      summary: Update a translation by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the translation to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: Updated translation content
+                tags:
+                  type: array
+                  items:
+                    type: string
+                    description: Updated tags
+      responses:
+        '200':
+          description: Translation updated successfully
+        '404':
+          description: Translation not found
+        '400':
+          description: Invalid input data
+
+  /translations/search:
+    get:
+      summary: Search translations
+      parameters:
+        - name: locale
+          in: query
+          schema:
+            type: string
+          description: Language locale (e.g., en, fr)
+        - name: key
+          in: query
+          schema:
+            type: string
+          description: Translation key
+        - name: content
+          in: query
+          schema:
+            type: string
+          description: Translation content
+        - name: tags
+          in: query
+          schema:
+            type: string
+          description: Comma-separated list of tags
+      responses:
+        '200':
+          description: List of translations matching the criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    locale:
+                      type: string
+                    key:
+                      type: string
+                    content:
+                      type: string
+                    tags:
+                      type: array
+                      items:
+                        type: string
+
+  /translations/export:
+    get:
+      summary: Export all translations
+      responses:
+        '200':
+          description: List of all translations
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '500':
+          description: Internal server error
