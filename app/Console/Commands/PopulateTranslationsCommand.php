@@ -2,9 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Translation;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use App\Models\Translation;
 
 class PopulateTranslations extends Command
 {
@@ -13,32 +12,36 @@ class PopulateTranslations extends Command
      *
      * @var string
      */
-    protected $signature = 'translations:populate {count=100000}';
+    protected $signature = 'translations:populate {count=1000}';
 
     /**
-     * The description of the console command.
+     * The console command description.
      *
      * @var string
      */
-    protected $description = 'Populate the database with translations for testing scalability.';
+    protected $description = 'Populate the translations table with dummy data';
 
     /**
      * Execute the console command.
      *
      * @return int
      */
-    public function handle() {
+    public function handle()
+    {
         $count = (int) $this->argument('count');
-        $this->info("Populating database with {$count} translations...");
-    
-        $batchSize = 1000; // Insert in batches of 1000
-        $iterations = ceil($count / $batchSize);
-    
-        for ($i = 0; $i < $iterations; $i++) {
-            Translation::factory()->count($batchSize)->create();
-            $this->info("Inserted " . ($i + 1) * $batchSize . " records...");
+        $locales = ['en', 'fr', 'es'];
+        $contexts = ['web', 'mobile', 'desktop'];
+
+        for ($i = 0; $i < $count; $i++) {
+            Translation::create([
+                'locale' => $locales[array_rand($locales)],
+                'key' => 'key_' . $i,
+                'content' => 'Translation content ' . $i,
+                'context' => $contexts[array_rand($contexts)],
+            ]);
         }
-    
-        $this->info("{$count} translations have been created successfully.");
+
+        $this->info("Successfully populated $count translations.");
+        return Command::SUCCESS;
     }
 }
