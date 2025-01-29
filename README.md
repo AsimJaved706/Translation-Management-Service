@@ -54,7 +54,6 @@ curl http://localhost:8000/api/translations/export
 ---
 
 ### **Step 4: Authentication (if required)**
-If your API uses Laravel Sanctum for token-based authentication, you’ll need to pass a valid API token with your `curl` commands:
 
 ```bash
 curl -X POST http://localhost:8000/api/translations \
