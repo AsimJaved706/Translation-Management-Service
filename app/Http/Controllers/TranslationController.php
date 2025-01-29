@@ -3,28 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TranslationRequest;
-use App\Models\Translation;
-use App\Services\TranslationService;
+use App\Repositories\TranslationRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TranslationController extends Controller
 {
     /**
-     * The service instance for handling translations.
+     * The repository instance for translations.
      *
-     * @var TranslationService
+     * @var TranslationRepository
      */
-    private $service;
+    private $repository;
 
     /**
-     * Constructor for injecting TranslationService.
+     * Constructor for injecting TranslationRepository.
      *
-     * @param TranslationService $service
+     * @param TranslationRepository $repository
      */
-    public function __construct(TranslationService $service)
+    public function __construct(TranslationRepository $repository)
     {
-        $this->service = $service;
+        $this->repository = $repository;
     }
 
     /**
@@ -35,7 +34,7 @@ class TranslationController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $translation = Translation::findOrFail($id);
+        $translation = $this->repository->find($id);
         return response()->json($translation, 200);
     }
 
@@ -47,7 +46,7 @@ class TranslationController extends Controller
      */
     public function store(TranslationRequest $request): JsonResponse
     {
-        $translation = $this->service->createTranslation($request->validated());
+        $translation = $this->repository->create($request->validated());
         return response()->json($translation, 201);
     }
 
@@ -59,25 +58,11 @@ class TranslationController extends Controller
      */
     public function search(Request $request): JsonResponse
     {
-        $query = Translation::query();
+        $query = $request->input('query', '');
+        $locale = $request->input('locale');
+        $tags = $request->input('tags');
 
-        if ($request->has('locale')) {
-            $query->where('locale', $request->locale);
-        }
-
-        if ($request->has('key')) {
-            $query->where('key', 'like', '%' . $request->key . '%');
-        }
-
-        if ($request->has('content')) {
-            $query->where('content', 'like', '%' . $request->content . '%');
-        }
-
-        if ($request->has('tags')) {
-            $query->whereJsonContains('tags', $request->tags);
-        }
-
-        $translations = $query->get();
+        $translations = $this->repository->search($query, $locale, $tags);
         return response()->json($translations, 200);
     }
 
@@ -90,23 +75,18 @@ class TranslationController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        $translation = Translation::findOrFail($id);
-        $translation->update($request->all());
+        $translation = $this->repository->update($id, $request->all());
         return response()->json($translation, 200);
     }
 
     /**
      * Export all translations.
      *
-     * @param Request $request
      * @return JsonResponse
      */
-    public function export(Request $request): JsonResponse
+    public function export(): JsonResponse
     {
-        $translations = Translation::all()->mapWithKeys(function ($item) {
-            return [$item->key => $item->content];
-        });
-
+        $translations = $this->repository->export();
         return response()->json($translations, 200);
     }
 }
