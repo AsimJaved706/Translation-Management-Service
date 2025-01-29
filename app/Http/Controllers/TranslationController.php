@@ -3,27 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TranslationRequest;
-use App\Repositories\TranslationRepository;
+use App\Services\TranslationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TranslationController extends Controller
 {
     /**
-     * The repository instance for translations.
+     * The service instance for translations.
      *
-     * @var TranslationRepository
+     * @var TranslationService
      */
-    private $repository;
+    private $service;
 
     /**
-     * Constructor for injecting TranslationRepository.
+     * Constructor for injecting TranslationService.
      *
-     * @param TranslationRepository $repository
+     * @param TranslationService $service
      */
-    public function __construct(TranslationRepository $repository)
+    public function __construct(TranslationService $service)
     {
-        $this->repository = $repository;
+        $this->service = $service;
     }
 
     /**
@@ -34,7 +34,7 @@ class TranslationController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $translation = $this->repository->find($id);
+        $translation = $this->service->getTranslationById($id);
         return response()->json($translation, 200);
     }
 
@@ -46,7 +46,7 @@ class TranslationController extends Controller
      */
     public function store(TranslationRequest $request): JsonResponse
     {
-        $translation = $this->repository->create($request->validated());
+        $translation = $this->service->createTranslation($request->validated());
         return response()->json($translation, 201);
     }
 
@@ -62,7 +62,7 @@ class TranslationController extends Controller
         $locale = $request->input('locale');
         $tags = $request->input('tags');
 
-        $translations = $this->repository->search($query, $locale, $tags);
+        $translations = $this->service->searchTranslations($query, $locale, $tags);
         return response()->json($translations, 200);
     }
 
@@ -75,7 +75,7 @@ class TranslationController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        $translation = $this->repository->update($id, $request->all());
+        $translation = $this->service->updateTranslation($id, $request->all());
         return response()->json($translation, 200);
     }
 
@@ -86,7 +86,7 @@ class TranslationController extends Controller
      */
     public function export(): JsonResponse
     {
-        $translations = $this->repository->export();
+        $translations = $this->service->exportTranslations();
         return response()->json($translations, 200);
     }
 }
